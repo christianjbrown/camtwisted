@@ -1,0 +1,257 @@
+{
+  "preferences" : {
+    "keepsWindowOnTop" : false,
+    "mirrorsPreview" : false,
+    "rtmpSettings" : {
+      "address" : "",
+      "isOn" : false,
+      "streamKey" : "",
+      "streamOptions" : {
+        "height" : 720,
+        "keyFrameSeconds" : 2,
+        "sampleRate" : 48000,
+        "sceneMarkers" : false,
+        "soundChannels" : 2,
+        "soundKilobits" : 128,
+        "videoCodec" : "h264",
+        "videoKilobits" : 4500
+      }
+    }
+  },
+  "studio" : {
+    "buttons" : [
+      {
+        "id" : "BE9282E4-4028-4BA2-B544-E993A04AE5B1",
+        "name" : "Welcome",
+        "scene" : {
+          "items" : [
+            {
+              "content" : {
+                "source" : {
+                  "_0" : {
+                    "testCard" : {
+
+                    }
+                  }
+                }
+              },
+              "id" : "2D030632-E5A9-405C-9884-36D935D30ED5",
+              "isEnabled" : true
+            },
+            {
+              "content" : {
+                "effect" : {
+                  "name" : "News Headline",
+                  "values" : {
+                    "Detail" : {
+                      "string" : {
+                        "_0" : "Made with CamTwisted"
+                      }
+                    },
+                    "Headline" : {
+                      "string" : {
+                        "_0" : "Welcome to the show"
+                      }
+                    },
+                    "Tag" : {
+                      "string" : {
+                        "_0" : "LIVE NOW"
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "6B9C7CB6-2AF5-462C-AC15-5FB0777EC99F",
+              "isEnabled" : true
+            },
+            {
+              "content" : {
+                "effect" : {
+                  "name" : "Clock",
+                  "values" : {
+                    "Size" : {
+                      "number" : {
+                        "_0" : 0.25
+                      }
+                    },
+                    "X_Position" : {
+                      "number" : {
+                        "_0" : 0.62
+                      }
+                    },
+                    "Y_Position" : {
+                      "number" : {
+                        "_0" : 0.42
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "2FBADAA2-6D6F-4EDB-AB89-E4FF20894711",
+              "isEnabled" : true
+            }
+          ]
+        }
+      },
+      {
+        "id" : "47B47AD1-F37D-4F67-A729-4C1DC721BF58",
+        "name" : "Slides",
+        "scene" : {
+          "items" : [
+            {
+              "content" : {
+                "source" : {
+                  "_0" : {
+                    "colorBars" : {
+
+                    }
+                  }
+                }
+              },
+              "id" : "3231CC3F-4772-48B0-8617-D02FF5187573",
+              "isEnabled" : true
+            },
+            {
+              "content" : {
+                "source" : {
+                  "_0" : {
+                    "text" : {
+                      "_0" : {
+                        "alignment" : "center",
+                        "color" : {
+                          "blue" : 1,
+                          "green" : 1,
+                          "red" : 1
+                        },
+                        "fontName" : "Helvetica-Bold",
+                        "fontSize" : 96,
+                        "hasShadow" : false,
+                        "lineHeight" : 1,
+                        "text" : "Quarterly update"
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "0CADF71A-1708-44CC-847D-0D45AE9DBD94",
+              "isEnabled" : true,
+              "pictureInPicture" : {
+                "center" : [
+                  0.5,
+                  0.75
+                ],
+                "rotation" : 0,
+                "scale" : 0.6,
+                "swing" : 0,
+                "tilt" : 0
+              }
+            },
+            {
+              "content" : {
+                "effect" : {
+                  "name" : "Vignette",
+                  "values" : {
+
+                  }
+                }
+              },
+              "id" : "92E254F6-D05E-4C73-9EB6-2DBD4CC2FF8B",
+              "isEnabled" : true
+            }
+          ]
+        },
+        "transitionName" : "Dissolve"
+      },
+      {
+        "id" : "5A28A2CA-A7A2-403C-B9C9-F63A18A6EF6F",
+        "locked" : true,
+        "name" : "Back in five",
+        "scene" : {
+          "items" : [
+            {
+              "content" : {
+                "source" : {
+                  "_0" : {
+                    "shape" : {
+                      "_0" : {
+                        "color" : {
+                          "blue" : 0.45,
+                          "green" : 0.2,
+                          "red" : 0.1
+                        },
+                        "kind" : "rectangle",
+                        "opacity" : 1
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "0BBA5A52-62A7-440C-8065-8A16BD662432",
+              "isEnabled" : true
+            },
+            {
+              "content" : {
+                "source" : {
+                  "_0" : {
+                    "text" : {
+                      "_0" : {
+                        "alignment" : "center",
+                        "color" : {
+                          "blue" : 1,
+                          "green" : 1,
+                          "red" : 1
+                        },
+                        "fontName" : "Helvetica-Bold",
+                        "fontSize" : 96,
+                        "hasShadow" : false,
+                        "lineHeight" : 1,
+                        "text" : "Back in five minutes"
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "AA2FC9B6-49AC-45C2-A4AA-1F14AF966996",
+              "isEnabled" : true,
+              "pictureInPicture" : {
+                "center" : [
+                  0.5,
+                  0.65
+                ],
+                "rotation" : 0,
+                "scale" : 0.7,
+                "swing" : 0,
+                "tilt" : 0
+              }
+            },
+            {
+              "content" : {
+                "effect" : {
+                  "name" : "Countdown",
+                  "values" : {
+                    "Y_Position" : {
+                      "number" : {
+                        "_0" : -0.15
+                      }
+                    }
+                  }
+                }
+              },
+              "id" : "33650074-538A-47A5-BF5C-685BC213FA7E",
+              "isEnabled" : true
+            }
+          ]
+        }
+      }
+    ],
+    "onAirID" : "BE9282E4-4028-4BA2-B544-E993A04AE5B1",
+    "swapMode" : false,
+    "transitionName" : "Dissolve",
+    "transitionTime" : 1
+  },
+  "version" : 1,
+  "windowSize" : {
+    "height" : 900,
+    "width" : 1440
+  }
+}

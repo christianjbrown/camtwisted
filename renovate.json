@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "description": [
+    "CamTwisted has no outside dependencies today. This is here so that any that arrive, Swift packages or GitHub Actions, are kept current from their first day."
+  ],
+  "dependencyDashboard": true,
+  "automerge": true,
+  "platformAutomerge": true
+}

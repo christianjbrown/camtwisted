@@ -1,0 +1,5 @@
+// The build for the Mac App Store and TestFlight: sandboxed, and without the
+// parts the store does not allow.
+#include "Base.xcconfig"
+
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) STORE

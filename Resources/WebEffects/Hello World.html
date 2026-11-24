@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello World</title>
+<!--
+  A sample web page effect. A page used as an effect is drawn over the
+  picture, and wherever the page is clear the picture shows through, so
+  leave the background alone. Copy this file into the effects folder,
+  rename it and make it yours: anything a browser can draw can go on air.
+-->
+<style>
+  :root {
+    --ink: #ffffff;
+    --glow: rgba(0, 0, 0, 0.45);
+    --first: #7dd3fc;
+    --second: #c4b5fd;
+    --third: #f9a8d4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  body {
+    display: grid;
+    place-items: center;
+    font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    color: var(--ink);
+  }
+
+  .card {
+    padding: 3vw 5vw;
+    border-radius: 2.5vw;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(1.2vw);
+    -webkit-backdrop-filter: blur(1.2vw);
+    box-shadow: 0 1.5vw 5vw var(--glow);
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 9vw;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(90deg, var(--first), var(--second), var(--third), var(--first));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: drift 8s linear infinite;
+  }
+
+  p {
+    margin: 1.2vw 0 0;
+    font-size: 2.2vw;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .wave {
+    display: inline-block;
+    transform-origin: 70% 70%;
+    animation: wave 2.4s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    to { background-position: 300% 0; }
+  }
+
+  @keyframes wave {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(14deg); }
+    20%, 40% { transform: rotate(-8deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    h1, .wave { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>Hello, world</h1>
+    <p><span class="wave" aria-hidden="true">&#128075;</span> This is a web page, live on your picture.</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+// Copy to Config/Signing.xcconfig (gitignored) and fill in your own values.
+// DEVELOPMENT_TEAM: your Apple developer team identifier.
+// BUNDLE_ID_PREFIX: a reverse-DNS prefix you own. The app is <prefix>.app,
+// the camera extension is <prefix>.app.camera, and the shared app group is
+// <team>.<prefix>.
+DEVELOPMENT_TEAM = ABCDE12345
+BUNDLE_ID_PREFIX = com.example.camtwisted
+
+// MICROPHONE_ADDON_URL: where the store build sends people for the virtual
+// microphone, which the store does not let the app install itself. A double
+// slash starts a comment in this kind of file, hence the $() in the middle.
+MICROPHONE_ADDON_URL = https:/$()/example.com/camtwisted/microphone

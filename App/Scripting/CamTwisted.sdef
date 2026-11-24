@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="CamTwisted Terminology">
+    <suite name="CamTwisted Scripting" code="CaTw" description="Commands for driving CamTwisted.">
+        <class name="application" code="capp" description="The CamTwisted application.">
+            <cocoa class="NSApplication"/>
+            <element type="effect" access="r" description="The effects and sources in use.">
+                <cocoa key="scriptEffects"/>
+            </element>
+            <element type="studioButton" access="r" description="Studio buttons.">
+                <cocoa key="scriptStudioButtons"/>
+            </element>
+            <property name="transitionName" code="CTtn" type="text" access="rw" description="Studio transition.">
+                <cocoa key="scriptTransitionName"/>
+            </property>
+            <property name="transitionTime" code="CTtt" type="real" access="rw" description="Studio transition time.">
+                <cocoa key="scriptTransitionTime"/>
+            </property>
+            <property name="swapMode" code="CTsm" type="boolean" access="rw" description="Studio swap mode.">
+                <cocoa key="scriptSwapMode"/>
+            </property>
+        </class>
+        <class name="effect" code="CTef" plural="effects" description="A source or effect in use.">
+            <cocoa class="CTScriptEffect"/>
+            <property name="name" code="pnam" type="text" access="r" description="The effect name."/>
+            <property name="enabled" code="CTen" type="boolean" access="rw" description="Whether it is switched on.">
+                <cocoa key="isEnabled"/>
+            </property>
+        </class>
+        <class name="studioButton" code="CTsb" plural="studioButtons" description="A studio button.">
+            <cocoa class="CTScriptStudioButton"/>
+            <property name="name" code="pnam" type="text" access="r" description="The button name."/>
+        </class>
+        <command name="addEffect" code="CaTwAdEf" description="Add another live effect.">
+            <cocoa class="CTAddEffectCommand"/>
+            <direct-parameter type="text" description="The effect to add."/>
+        </command>
+        <command name="setSource" code="CaTwStSr" description="Set the video source.">
+            <cocoa class="CTSetSourceCommand"/>
+            <direct-parameter type="text" description="The source to use."/>
+        </command>
+        <command name="setprop" code="CaTwStPr" description="Set an effect's property.">
+            <cocoa class="CTSetPropertyCommand"/>
+            <direct-parameter type="effect" description="One effect."/>
+            <parameter name="property" code="CTpr" type="text" description="The property to set.">
+                <cocoa key="property"/>
+            </parameter>
+            <parameter name="to" code="CTto" type="text" description="The new value.">
+                <cocoa key="value"/>
+            </parameter>
+        </command>
+        <command name="selectStudioTransition" code="CaTwSlTr" description="Select the studio transition.">
+            <cocoa class="CTSelectTransitionCommand"/>
+            <direct-parameter type="text" description="The transition to use."/>
+        </command>
+        <command name="click" code="CaTwClik" description="Click a studio button.">
+            <cocoa class="CTSelectForAirCommand"/>
+            <direct-parameter type="studioButton" description="The button to click."/>
+        </command>
+        <command name="selectForAir" code="CaTwSlAr" description="Line a studio button up to go to air.">
+            <cocoa class="CTSelectForAirCommand"/>
+            <direct-parameter type="studioButton" description="The button to select."/>
+        </command>
+        <command name="punchToAir" code="CaTwPnAr" description="Put a studio button straight on air.">
+            <cocoa class="CTPunchToAirCommand"/>
+            <direct-parameter type="studioButton" description="The button to put on air."/>
+        </command>
+        <command name="delete" code="CaTwDelt" description="Delete a studio button.">
+            <cocoa class="CTDeleteButtonCommand"/>
+            <direct-parameter type="studioButton" description="The button to delete."/>
+        </command>
+        <command name="duplicate" code="CaTwDupl" description="Duplicate a studio button.">
+            <cocoa class="CTDuplicateButtonCommand"/>
+            <direct-parameter type="studioButton" description="The button to duplicate."/>
+        </command>
+        <command name="startTransition" code="CaTwSttr" description="Start the selected studio transition.">
+            <cocoa class="CTStartTransitionCommand"/>
+        </command>
+        <command name="cut" code="CaTwCutt" description="Cut preview to program.">
+            <cocoa class="CTCutCommand"/>
+        </command>
+        <command name="studioDissolve" code="CaTwDslv" description="Start a dissolve transition.">
+            <cocoa class="CTDissolveCommand"/>
+        </command>
+        <command name="snapshot" code="CaTwSnap" description="Save the program picture as a file and return its path.">
+            <cocoa class="CTSnapshotCommand"/>
+            <result type="text" description="The path of the saved picture."/>
+        </command>
+    </suite>
+</dictionary>

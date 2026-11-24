@@ -1,0 +1,160 @@
+name: CamTwisted
+options:
+  bundleIdPrefix: ""
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+  # The Mac App Store and TestFlight build: sandboxed.
+  Store: release
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+  Store: Config/Store.xcconfig
+packages:
+  CamTwistCore:
+    path: .
+targets:
+  CamTwisted:
+    type: application
+    platform: macOS
+    sources:
+      - App
+      # Web page effects that come with the app, kept together as a folder.
+      - path: Resources/WebEffects
+        type: folder
+        buildPhase: resources
+      # The example show from the File menu, the same file the README pictures use.
+      - path: docs/demo/Demo show.camtwisted
+        buildPhase: resources
+    dependencies:
+      - package: CamTwistCore
+        product: CamTwistCore
+      - package: CamTwistCore
+        product: CamTwistRendering
+      - package: CamTwistCore
+        product: CamTwistControl
+      - target: CameraExtension
+        embed: true
+        copy:
+          destination: wrapper
+          subpath: Contents/Library/SystemExtensions
+      - target: AudioDriver
+        embed: true
+        copy:
+          destination: resources
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: $(PRODUCT_DISPLAY_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        NSCameraUsageDescription: Your cameras are video sources you can send to the virtual camera.
+        NSMicrophoneUsageDescription: The web streams can carry the sound of the microphones and cameras in a scene.
+        NSPrincipalClass: NSApplication
+        CFBundleIconFile: AppIcon
+        NSHumanReadableCopyright: © 2026 Christian Brown
+        NSAppleScriptEnabled: true
+        AboutMaker: Christian Brown
+        AboutSupportURL: https://github.com/christianjbrown/camtwisted/issues
+        AboutInspiration:
+          - Inspired by CamTwist, a Mac app from the 2000s.
+          - CamTwisted is an independent project, written from scratch.
+          - It is not affiliated with or endorsed by the makers or owners of CamTwist.
+        OSAScriptingDefinition: CamTwisted.sdef
+        NSAppleEventsUsageDescription: Scripts you put in a scene can run AppleScript.
+        NSLocalNetworkUsageDescription: Finds Chromecasts and other Cast devices on your network to play the picture on.
+        NSBonjourServices:
+          - _googlecast._tcp
+        CameraExtensionBundleIdentifier: $(CAMERA_BUNDLE_ID)
+        LSApplicationCategoryType: public.app-category.video
+        ITSAppUsesNonExemptEncryption: false
+        MicrophoneAddOnURL: $(MICROPHONE_ADDON_URL)
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: CamTwisted Setup
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - $(APP_BUNDLE_ID).setup
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: $(APP_BUNDLE_ID).setup
+            UTTypeDescription: CamTwisted Setup
+            UTTypeConformsTo:
+              - public.json
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - camtwisted
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        PRODUCT_NAME: $(PRODUCT_DISPLAY_NAME)
+        # The two entitlements files are kept by hand: the usual one, and
+        # the sandboxed one the store build is signed with.
+        CODE_SIGN_ENTITLEMENTS: App/CamTwist.entitlements
+      configs:
+        Store:
+          CODE_SIGN_ENTITLEMENTS: App/CamTwistStore.entitlements
+    postBuildScripts:
+      # The store does not allow an app to carry or install an audio driver,
+      # so the store build leaves the virtual microphone's driver out.
+      - name: Leave the audio driver out of the store build
+        script: |
+          if [ "$CONFIGURATION" = "Store" ]; then
+            rm -rf "$BUILT_PRODUCTS_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/CamTwistedAudio.driver"
+          fi
+        basedOnDependencyAnalysis: false
+  CameraExtension:
+    type: system-extension
+    platform: macOS
+    sources: [CameraExtension]
+    dependencies:
+      - package: CamTwistCore
+        product: CamTwistCore
+    info:
+      path: CameraExtension/Info.plist
+      properties:
+        CFBundleDisplayName: $(PRODUCT_DISPLAY_NAME) Camera
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundlePackageType: SYSX
+        NSSystemExtensionUsageDescription: Provides the virtual camera other apps can select.
+        CMIOExtension:
+          CMIOExtensionMachServiceName: $(APP_GROUP).camera
+    entitlements:
+      path: CameraExtension/CameraExtension.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(CAMERA_BUNDLE_ID)
+        PRODUCT_NAME: $(CAMERA_BUNDLE_ID)
+  AudioDriver:
+    type: bundle
+    platform: macOS
+    sources: [Sources/CamTwistAudioDriver]
+    info:
+      path: AudioDriver/Info.plist
+      properties:
+        CFBundleDisplayName: $(PRODUCT_DISPLAY_NAME) Microphone
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # The audio server loads the driver through this factory, which is
+        # how it finds every audio server plug-in.
+        CFPlugInFactories:
+          7AB54259-5A07-4D7C-9389-01FC502F6509: CamTwistAudioDriver_Create
+        CFPlugInTypes:
+          443ABAB8-E7B3-491A-B985-BEB9187030DB:
+            - 7AB54259-5A07-4D7C-9389-01FC502F6509
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(AUDIO_BUNDLE_ID)
+        PRODUCT_NAME: CamTwistedAudio
+        WRAPPER_EXTENSION: driver

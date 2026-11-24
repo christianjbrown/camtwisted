@@ -1,0 +1,17 @@
+.build/
+build/
+DerivedData/
+*.xcodeproj
+.DS_Store
+Config/Signing.xcconfig
+Effects/
+*.dmg
+App/Info.plist
+CameraExtension/Info.plist
+*.entitlements
+# The app's two are kept by hand, not generated.
+!App/*.entitlements
+Package.resolved
+
+# Worktrees that agents work in
+.claude/
