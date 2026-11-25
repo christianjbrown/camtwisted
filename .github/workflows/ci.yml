@@ -18,46 +18,13 @@ permissions:
   contents: read
 
 jobs:
-  # On a push to main, the gates are skipped when the pull request it came from already passed
-  # this workflow on the identical tree. Any doubt runs them in full. See
-  # christianjbrown/ci-already-tested.
-  tested:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: read
-      actions: read
-    outputs:
-      tested: ${{ steps.check.outputs.tested }}
-    steps:
-      - name: Already passed on the pull request
-        id: check
-        uses: christianjbrown/ci-already-tested@main
-
-  # On a pull request, the gates are skipped when the pre-push hook already ran them on exactly
-  # this commit from a clean tree, which it records as a local-gates status. No status (a dirty
-  # tree, --no-verify, another machine) runs them in full.
-  local:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      statuses: read
-    outputs:
-      tested: ${{ steps.check.outputs.tested }}
-    steps:
-      - name: Already passed the pre-push gates
-        id: check
-        uses: christianjbrown/ci-already-tested/locally-tested@main
-
   # On the self-hosted Mac (label camtwisted): hosted macOS minutes count ten times against the
   # account's allowance, and the build needs a current Xcode. A run waits while that Mac is off.
+  # A pull request from a fork never runs here, because the runner is a personal machine and a
+  # fork's workflow would run its own code on it.
   gates:
     name: Gates
-    needs: [tested, local]
-    if: ${{ !cancelled() && needs.tested.outputs.tested != 'true' && needs.local.outputs.tested != 'true' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, macOS, ARM64, camtwisted]
     timeout-minutes: 30
     steps:
