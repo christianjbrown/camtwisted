@@ -123,7 +123,7 @@ a build to a version by that string.
 
 Each one is a headline over the real app, at 2880 by 1800. The pictures in them are NASA
 photographs, which are in the public domain. Keep other companies' marks out of them: no BBC
-test card, no toy figure, and no film names on effects.
+test card and no toy figure. Effects keep the names the app gives them, Matrix included.
 
 | File | Headline | What it shows |
 | --- | --- | --- |
