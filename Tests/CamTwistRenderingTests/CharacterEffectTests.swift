@@ -38,7 +38,7 @@ final class CharacterEffectTests: XCTestCase {
     private let patience = 10
     private let tuning = EffectTuning(
         slowMotionFramesPerSecond: 12, slowMotionLongestLag: 2.5, slowMotionWidestFrame: 1280, faceFramesHeld: 10,
-        characterSmoothing: 0.6, wornSmoothing: 0.85
+        characterSmoothing: 0.6, wornSmoothing: 0.85, framingSmoothing: 0.06
     )
 
     /// Red, green, blue and alpha at a point counted from the bottom left, as pictures are.
@@ -350,6 +350,39 @@ final class CharacterEffectTests: XCTestCase {
         XCTAssertEqual(WornEffect.parameters(for: Moustache()).map(\.key), ["Size", "Color"])
     }
 
+    // MARK: Follow me
+
+    func testFollowMeZoomsInOnTheFaceAndKeepsThePictureEdgesOutOfFrame() {
+        // A red spot where the face is.
+        let spot = CIImage(color: .red).cropped(to: CGRect(x: 58, y: 83, width: 4, height: 4)).composited(over: picture)
+        func framed(on centre: CGPoint, values: [String: EffectValue] = [:]) -> CIImage {
+            let effect = FollowMeEffect(canvas: canvas, follower: follower(from: face(centre)))
+            effect.setValues(values)
+            return effect.apply(to: spot, time: 0)
+        }
+        // Twice as close: a frame 160 by 90, its middle 9 below the face,
+        // held at the left edge. The spot lands at twice its place in it.
+        let close = framed(on: CGPoint(x: 60, y: 85), values: [FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertEqual(close.extent, bounds)
+        XCTAssertTrue(isRed(pixel(close, x: 120, y: 108)), "the face, zoomed in")
+        XCTAssertTrue(isBlue(pixel(close, x: 120, y: 140)), "with nothing else red")
+        // Over at the far corner the frame stops at the picture's edges.
+        let corner = framed(on: CGPoint(x: 320, y: 180), values: [FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertTrue(isBlue(pixel(corner, x: 120, y: 108)), "the spot is out of a frame held in the top right")
+        XCTAssertEqual(corner.extent, bounds)
+        // At no zoom the picture is as it was.
+        XCTAssertTrue(isRed(pixel(framed(on: CGPoint(x: 60, y: 85), values: [FollowMeEffect.zoomKey: .number(1)]), x: 60, y: 85)))
+        XCTAssertEqual(FollowMeEffect.parameters.map(\.key), ["Zoom"])
+    }
+
+    func testFollowMeIsFramedOnThePreviewsSampleFigure() {
+        let effect = FollowMeEffect(canvas: canvas, follower: follower(from: face()))
+        effect.rest(at: face(CGPoint(x: 60, y: 85)))
+        let spot = CIImage(color: .red).cropped(to: CGRect(x: 58, y: 83, width: 4, height: 4)).composited(over: picture)
+        effect.setValues([FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertTrue(isRed(pixel(effect.apply(to: spot, time: 0), x: 120, y: 108)))
+    }
+
     // MARK: Big eyes
 
     func testBigEyesBulgeThePictureRoundEachEyeAndNowhereElse() {
@@ -452,13 +485,14 @@ final class CharacterEffectTests: XCTestCase {
     func testTheRealEffectsDrawOnAPictureWithNobodyInIt() {
         // The system finds no face in a plain picture: the figure and the
         // antennae wait in the middle.
-        XCTAssertEqual(NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker).map(\.name), ["Toy Figure", "Alien Antennae", "Pixel Sunglasses", "Moustache", "Big Eyes"])
+        XCTAssertEqual(NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker).map(\.name), ["Toy Figure", "Alien Antennae", "Pixel Sunglasses", "Moustache", "Big Eyes", "Follow Me"])
         for character in NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker) {
             let image = character.make(canvas).apply(to: picture, time: 0)
             XCTAssertEqual(image.extent, bounds, character.name)
-            // Big Eyes only reshapes the picture, which a plain one does not show.
+            // Big Eyes and Follow Me only reshape the picture, which a plain one does not show.
             let marks = [(160, 130), (137, 172), (160, 121), (160, 96)].map { pixel(image, x: $0.0, y: $0.1) }
-            XCTAssertEqual(marks.allSatisfy(isBlue), character.name == BigEyesEffect.name, character.name)
+            let reshapes = [BigEyesEffect.name, FollowMeEffect.name].contains(character.name)
+            XCTAssertEqual(marks.allSatisfy(isBlue), reshapes, character.name)
         }
     }
 }

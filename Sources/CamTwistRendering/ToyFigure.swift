@@ -270,6 +270,9 @@ extension NativeEffect {
             NativeEffect(name: BigEyesEffect.name, kind: .filter, parameters: BigEyesEffect.parameters) { canvas in
                 BigEyesEffect(canvas: canvas, follower: follower(in: canvas, share: tuning.wornSmoothing))
             },
+            NativeEffect(name: FollowMeEffect.name, kind: .filter, parameters: FollowMeEffect.parameters) { canvas in
+                FollowMeEffect(canvas: canvas, follower: follower(in: canvas, share: tuning.framingSmoothing))
+            },
         ]
     }
 }
