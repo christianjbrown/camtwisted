@@ -18,8 +18,57 @@ final class StepsModelTests: XCTestCase {
     private func makeModel() -> StepsModel {
         StepsModel(
             state: state, builder: StepBuilder(parameters: EffectParameters(library: FakeEffectLibrary())),
-            choices: choices
+            choices: choices, companions: CaptionsMicrophone()
         )
+    }
+
+    private let captions = ChainItem.Content.effect(name: LiveCaptionsEffect.name, values: [:])
+    private let microphone = ChainItem.Content.source(.microphone(deviceID: nil))
+
+    func testCaptionsWithNothingHeardAboveBringAMicrophoneJustAboveThem() throws {
+        let camera = sourceItem(.camera(deviceID: "built-in"))
+        state.scene = SceneConfiguration(items: [camera])
+        makeModel().add(captions)
+        XCTAssertEqual(state.scene.items.map(\.content), [camera.content, microphone, captions])
+        XCTAssertEqual(state.selectedStepID, state.scene.items.last?.id, "the captions are what is chosen")
+    }
+
+    func testCaptionsBelowSomethingHeardComeAlone() {
+        let video = sourceItem(.movie(MovieSettings()))
+        state.scene = SceneConfiguration(items: [video])
+        makeModel().add(captions)
+        XCTAssertEqual(state.scene.items.map(\.content), [video.content, captions])
+    }
+
+    func testOnlyWhatIsAboveTheCaptionsCounts() throws {
+        let camera = sourceItem(.camera(deviceID: "built-in"))
+        let mic = sourceItem(.microphone(deviceID: nil))
+        var muted = sourceItem(.microphone(deviceID: nil))
+        muted.volume = SceneSound.silent
+        var off = sourceItem(.microphone(deviceID: nil))
+        off.isEnabled = false
+        let picture = sourceItem(.image(path: "/pictures/logo.png"))
+        state.scene = SceneConfiguration(items: [camera, picture, muted, off, mic])
+        makeModel().add(captions, before: mic.id, inBranchOf: nil)
+        XCTAssertEqual(state.scene.items.map(\.content), [
+            camera.content, picture.content, muted.content, off.content, microphone, captions, mic.content,
+        ])
+    }
+
+    func testCaptionsInABranchHearItsSource() throws {
+        let mic = sourceItem(.microphone(deviceID: nil))
+        let camera = sourceItem(.camera(deviceID: "built-in"))
+        state.scene = SceneConfiguration(items: [mic, camera])
+        let model = makeModel()
+        model.add(captions, before: nil, inBranchOf: mic.id)
+        XCTAssertEqual(state.scene.item(id: mic.id)?.branch?.map(\.content), [captions])
+        model.add(captions, before: nil, inBranchOf: camera.id)
+        XCTAssertEqual(state.scene.item(id: camera.id)?.branch?.map(\.content), [microphone, captions])
+    }
+
+    func testOtherStepsBringNothing() {
+        makeModel().add(.effect(name: "Fx", values: [:]))
+        XCTAssertEqual(state.scene.items.count, 1)
     }
 
     func testAnAddedStepIsSelectedWithItsSettingsOpen() throws {

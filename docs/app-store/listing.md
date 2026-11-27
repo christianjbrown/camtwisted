@@ -86,7 +86,7 @@ CamTwisted provides a virtual camera through a Camera Extension. To see it worki
    Login Items & Extensions, Camera Extensions.
 3. Open FaceTime or Photo Booth and choose "CamTwisted Virtual Camera output" as the camera.
 4. Back in CamTwisted, add an effect from "Add an effect": the other app shows the change.
-5. To see Live Captions, add a Microphone source, then the Live Captions effect below it, and
+5. To see Live Captions, add the Live Captions effect (a Microphone source comes with it) and
    speak: the words appear along the bottom of the picture.
 
 The app uses the camera and microphone as sources for the picture and its sound, and speech

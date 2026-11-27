@@ -30,7 +30,8 @@ struct StateHelperMaker: StateHelperMaking {
             pictureSizes: parts.picture.pictureSizes, overlayMeasurer: parts.picture.overlayMeasurer
         )
         let steps = StepsModel(
-            state: state, builder: StepBuilder(parameters: effectParameters), choices: subModels.choices
+            state: state, builder: StepBuilder(parameters: effectParameters), choices: subModels.choices,
+            companions: CaptionsMicrophone()
         )
         let shortcuts = ShortcutModel(state: state, listener: parts.control.shortcuts, recorder: ShortcutRecorder())
         let handovers = SceneHandoverTimer(state: state, timers: parts.system.timers)
