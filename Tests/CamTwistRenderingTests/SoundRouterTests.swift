@@ -3,7 +3,7 @@ import CoreMedia
 import XCTest
 @testable import CamTwistRendering
 
-private final class FakeMixer: SoundMixing {
+final class FakeMixer: SoundMixing {
     var fed: [UUID] = []
     var levels: [UUID: Double] = [:]
     var removed: [UUID] = []
@@ -16,7 +16,7 @@ private final class FakeMixer: SoundMixing {
     }
 }
 
-private final class FakeSoundSource: SoundSource {
+final class FakeSoundSource: SoundSource {
     var onSound: ((CMSampleBuffer) -> Void)?
 }
 
@@ -53,7 +53,7 @@ private final class RecordingSink: SoundSink {
 final class SoundRouterTests: XCTestCase {
     private let mixer = FakeMixer()
     private var sources: [UUID: FakeSoundSource] = [:]
-    private lazy var router = SoundRouter(mixer: mixer) { [unowned self] in self.sources[$0] }
+    private lazy var router = SoundRouter(mixer: mixer, taps: SoundTaps { [unowned self] in self.sources[$0] })
 
     func testSourcesInTheSceneAreHeardAtTheirLevels() {
         let camera = UUID()
@@ -100,7 +100,7 @@ final class SoundRouterTests: XCTestCase {
         let camera = UUID()
         let source = FakeSoundSource()
         var lost: FakeMixer? = FakeMixer()
-        let router = SoundRouter(mixer: lost!) { _ in source }
+        let router = SoundRouter(mixer: lost!, taps: SoundTaps { _ in source })
         router.apply(levels: [camera: 1])
         lost = nil
         source.onSound?(TestSound.buffer(at: 0))

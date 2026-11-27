@@ -109,9 +109,12 @@ A few favourites:
 - **Big Eyes**, which makes yours bigger. 👀
 - **Follow Me**, which zooms in on you and glides along as you move about, like your own
   camera operator. 🎬
-- **Live Captions**, your words written along the bottom as you say them. Pick the font
-  (Open Sans to start), colour, size and shadow. It all happens on your Mac: nothing you say
-  goes anywhere. 💬
+- **Live Captions**, the words said in the sources above it, written along the bottom as
+  they are said. Put it under a Microphone and it writes down you; put it under a video and
+  it subtitles the video. Each source counts as loud as it is in the mix, so one turned right
+  down is left out. Your Mac's own camera has no microphone of its own, so add a Microphone
+  source above the captions too. Pick the font (Open Sans to start), colour, size and shadow.
+  It all happens on your Mac: nothing said goes anywhere. 💬
 - **Stop Motion** and **Slow Motion**, for a jerky claymation look or a dreamy replay.
 - **Black and White, Sepia, Charcoal sketch, Comic Book, Thermal** and other looks.
 - **Crop, Mask, Vignette, Pixelate, Mirror, Kaleidoscope** to reshape the picture.

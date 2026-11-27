@@ -611,3 +611,55 @@ final class RenderLoopTests: XCTestCase {
         XCTAssertEqual(timed.progress(at: 9), 1)
     }
 }
+
+/// Remembers what it last heard.
+private final class ListeningEffect: ImageEffect, HearsSourcesAbove {
+    private(set) var heard: HeardSources?
+
+    func setValues(_ values: [String: EffectValue]) {}
+    func apply(to image: CIImage, time: TimeInterval) -> CIImage { image }
+    func hear(_ sources: HeardSources) { heard = sources }
+}
+
+private final class ListeningFactory: ImageEffectFactory {
+    private(set) var made: [ListeningEffect] = []
+
+    func makeEffect(named name: String, canvas: CGSize) -> ImageEffect? {
+        let effect = ListeningEffect()
+        made.append(effect)
+        return effect
+    }
+}
+
+final class SceneHearingTests: XCTestCase {
+    private let factory = ListeningFactory()
+    private lazy var renderer = SceneRenderer(
+        sources: SourceRegistry(providers: []), effectFactory: factory, canvas: CameraContract.size, supplies: .system()
+    )
+
+    func testAnEffectHearsTheSourcesAboveItAtTheirLevels() {
+        let microphone = ChainItem(content: .source(.microphone(deviceID: nil)), volume: 0.5)
+        let muted = ChainItem(content: .source(.microphone(deviceID: "quiet")), volume: 0)
+        let off = ChainItem(isEnabled: false, content: .source(.microphone(deviceID: "off")))
+        let bars = ChainItem(content: .source(.colorBars))
+        let below = ChainItem(content: .source(.microphone(deviceID: "below")))
+        let scene = SceneConfiguration(items: [
+            microphone, muted, off, bars,
+            ChainItem(content: .effect(name: "Captions", values: [:])),
+            below,
+            ChainItem(content: .effect(name: "Captions", values: [:])),
+        ])
+        _ = renderer.render(scene, time: 0)
+        XCTAssertEqual(factory.made.first?.heard, HeardSources(levels: [microphone.id: 0.5]))
+        XCTAssertEqual(factory.made.last?.heard, HeardSources(levels: [microphone.id: 0.5, below.id: 1]))
+    }
+
+    func testAnEffectInABranchHearsTheSourceTheBranchBelongsTo() {
+        let effect = ChainItem(content: .effect(name: "Captions", values: [:]))
+        let microphone = ChainItem(content: .source(.microphone(deviceID: nil)), branch: [effect])
+        let bars = ChainItem(content: .source(.colorBars), branch: [ChainItem(content: .effect(name: "Captions", values: [:]))])
+        _ = renderer.render(SceneConfiguration(items: [microphone, bars]), time: 0)
+        XCTAssertEqual(factory.made.first?.heard, HeardSources(levels: [microphone.id: 1]))
+        XCTAssertEqual(factory.made.last?.heard, HeardSources.none, "a picture with no sound has none to hear")
+    }
+}

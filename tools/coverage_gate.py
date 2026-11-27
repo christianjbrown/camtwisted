@@ -16,6 +16,7 @@ import sys
 # give them a camera or a permission, so they are kept free of logic and
 # left out of the gate.
 DEVICE_BOUNDARY = {
+    "AnalyzerSpeechTranscriber.swift",
     "AppleSpeechTranscriber.swift",
     "CameraSource.swift",
     "DisplaySource.swift",

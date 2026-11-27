@@ -94,4 +94,10 @@ public enum SceneSound {
         }
         return levels
     }
+
+    /// How loud one step is, or nil for a step that makes no sound: an
+    /// effect, or a source with no sound of its own.
+    public static func level(of item: ChainItem) -> Double? {
+        item.source?.kind.level(stepVolume: item.volume)
+    }
 }

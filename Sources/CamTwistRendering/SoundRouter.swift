@@ -25,16 +25,13 @@ public protocol SoundRouting {
 /// to the mix.
 public final class SoundRouter: SoundRouting {
     private let mixer: SoundMixing
-    private let source: (UUID) -> SoundSource?
+    private let taps: SoundTapping
     private let lock = NSLock()
-    private var connected: Set<UUID> = []
     private var wanted: [UUID: Double] = [:]
 
-    /// - Parameter source: finds the running source for a step, when it is
-    ///   one that makes sound.
-    public init(mixer: SoundMixing, source: @escaping (UUID) -> SoundSource?) {
+    public init(mixer: SoundMixing, taps: SoundTapping) {
         self.mixer = mixer
-        self.source = source
+        self.taps = taps
     }
 
     /// Sets the levels of the sources that should be heard. Any other
@@ -43,17 +40,15 @@ public final class SoundRouter: SoundRouting {
     public func apply(levels: [UUID: Double]) {
         lock.lock()
         defer { lock.unlock() }
+        let key = ObjectIdentifier(self)
         for id in wanted.keys where levels[id] == nil {
-            source(id)?.onSound = nil
+            taps.stopListening(to: id, as: key)
             mixer.remove(id)
-            connected.remove(id)
         }
         wanted = levels
         for (id, level) in levels {
             mixer.setLevel(level, for: id)
-            guard !connected.contains(id), let sounding = source(id) else { continue }
-            sounding.onSound = { [weak mixer] in mixer?.feed($0, from: id) }
-            connected.insert(id)
+            taps.listen(to: id, as: key) { [weak mixer] in mixer?.feed($0, from: id) }
         }
     }
 }
