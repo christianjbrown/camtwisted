@@ -2,14 +2,13 @@ import AVFoundation
 import Foundation
 import Speech
 
-/// Listens to the Mac's microphone and writes down what is said with the
-/// system's own speech recognition. Recognition is held to this Mac, so
-/// nothing that is said leaves it. A recognition ends by itself after a
-/// pause or a minute or so; a fresh one follows on while still listening.
-final class AppleSpeechTranscriber: SpeechTranscribing {
+/// Writes down what is said in the sound it is sent, with the system's
+/// older speech recognition, for Macs before macOS 26. It needs Siri and
+/// Dictation switched on. Recognition is held to this Mac, so nothing
+/// that is said leaves it. A recognition ends by itself after a pause or a
+/// minute or so; a fresh one follows on while still listening.
+public final class AppleSpeechTranscriber: SpeechTranscribing {
     private enum Listening {
-        static let bus: AVAudioNodeBus = 0
-        static let bufferFrames: AVAudioFrameCount = 1024
         /// A pause before a recognition that ended is followed by another,
         /// so one that fails at once does not spin.
         static let restartDelay: TimeInterval = 1
@@ -18,7 +17,6 @@ final class AppleSpeechTranscriber: SpeechTranscribing {
     private let now: () -> Date
     private let queue = DispatchQueue(label: "camtwisted.captions")
     private let lock = NSLock()
-    private let engine = AVAudioEngine()
     // Made only once listening starts: making one asks for permission.
     private lazy var recognizer = SFSpeechRecognizer()
     private var latest = HeardSpeech.nothing
@@ -26,53 +24,36 @@ final class AppleSpeechTranscriber: SpeechTranscribing {
     private var task: SFSpeechRecognitionTask?
     private var isListening = false
 
-    init(now: @escaping () -> Date) {
+    public init(now: @escaping () -> Date) {
         self.now = now
     }
 
-    var heard: HeardSpeech { lock.withLock { latest } }
+    public var heard: HeardSpeech { lock.withLock { latest } }
 
-    func start() {
+    public func send(_ sound: CMSampleBuffer) {
+        guard let request = lock.withLock({ request }), let buffer = SoundBuffers.pcmBuffer(from: sound) else { return }
+        request.append(buffer)
+    }
+
+    public func start() {
         queue.async {
             self.isListening = true
             SFSpeechRecognizer.requestAuthorization { status in
                 self.queue.async {
                     guard status == .authorized, self.isListening else { return }
-                    self.beginHearing()
+                    self.beginRecognition()
                 }
             }
         }
     }
 
-    func stop() {
+    public func stop() {
         queue.async {
-            // Never started, so nothing to stop, and the microphone is not touched.
             guard self.isListening else { return }
             self.isListening = false
-            self.engine.inputNode.removeTap(onBus: Listening.bus)
-            self.engine.stop()
             self.endRecognition()
             self.lock.withLock { self.latest = .nothing }
         }
-    }
-
-    private func beginHearing() {
-        guard !engine.isRunning else { return }
-        let input = engine.inputNode
-        input.installTap(
-            onBus: Listening.bus, bufferSize: Listening.bufferFrames, format: input.outputFormat(forBus: Listening.bus)
-        ) { [weak self] buffer, _ in
-            guard let self else { return }
-            self.lock.withLock { self.request }?.append(buffer)
-        }
-        engine.prepare()
-        do {
-            try engine.start()
-        } catch {
-            input.removeTap(onBus: Listening.bus)
-            return
-        }
-        beginRecognition()
     }
 
     private func beginRecognition() {

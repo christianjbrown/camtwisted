@@ -5,9 +5,8 @@ import Foundation
 
 extension AppAssembly {
     /// The mix of what is heard, and the virtual microphone it is played to.
-    static func soundParts(_ basics: Basics, sources: SourceSet, outputs: OutputSet) -> SoundParts {
-        let registry = sources.registry
-        return SoundParts(
+    static func soundParts(_ basics: Basics, taps: SoundTapping, outputs: OutputSet) -> SoundParts {
+        SoundParts(
             sound: SoundDesk(
                 router: SoundRouter(
                     mixer: EngineSoundMixer(
@@ -16,7 +15,7 @@ extension AppAssembly {
                         queue: basics.queues.makeQueue(label: EngineSoundMixer.queueLabel, qos: .default),
                         makeNode: RenderingSystem.makePlayerNode
                     ),
-                    source: { registry.source(for: $0) as? SoundSource }
+                    taps: taps
                 ),
                 microphoneAccess: CaptureMicrophoneAccess()
             ),

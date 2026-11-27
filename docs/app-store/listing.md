@@ -31,7 +31,7 @@ SOURCES
 Any webcam. A whole screen, part of one, or a single window. Videos and playlists. Slide shows. Web pages. Live streams. Pictures, text in any font, and shapes. A pen for drawing on the picture.
 
 EFFECTS
-Titles, a news headline, a clock and a countdown. Live captions that write down what you say as you say it, on your Mac. Blur the background, or remove it with no green screen. Let the picture follow you as you move about. Become a toy figure whose face copies yours, grow a pair of alien antennae, put on pixel sunglasses or a moustache, or give yourself big eyes. Play it back in slow motion or as a stop motion film. Looks such as black and white, sepia, comic book and charcoal sketch. Crop, mask, mirror and kaleidoscope. Wrap the picture round a cube or a sphere. Every effect has a preview, and you can load your own.
+Titles, a news headline, a clock and a countdown. Live captions that write down what is said, by you or in a video, as it is said, on your Mac. Blur the background, or remove it with no green screen. Let the picture follow you as you move about. Become a toy figure whose face copies yours, grow a pair of alien antennae, put on pixel sunglasses or a moustache, or give yourself big eyes. Play it back in slow motion or as a stop motion film. Looks such as black and white, sepia, comic book and charcoal sketch. Crop, mask, mirror and kaleidoscope. Wrap the picture round a cube or a sphere. Every effect has a preview, and you can load your own.
 
 MAKE IT YOURS
 Drag things about on the picture itself: the middle to move, a corner to resize, the knob to turn. Shrink any source into a corner, tilt it, and set it moving. Give one source effects of its own.
@@ -86,6 +86,8 @@ CamTwisted provides a virtual camera through a Camera Extension. To see it worki
    Login Items & Extensions, Camera Extensions.
 3. Open FaceTime or Photo Booth and choose "CamTwisted Virtual Camera output" as the camera.
 4. Back in CamTwisted, add an effect from "Add an effect": the other app shows the change.
+5. To see Live Captions, add a Microphone source, then the Live Captions effect below it, and
+   speak: the words appear along the bottom of the picture.
 
 The app uses the camera and microphone as sources for the picture and its sound, and speech
 recognition, on the device only, when the person adds Live Captions. It records the

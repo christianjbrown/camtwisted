@@ -3,13 +3,15 @@ import CoreImage
 import XCTest
 @testable import CamTwistRendering
 
-private final class FakeTranscriber: SpeechTranscribing {
+/// Records who joins and leaves, and says the same words to everyone.
+private final class FakeCaptions: CaptionsListening {
     var heard = HeardSpeech.nothing
-    private(set) var starts = 0
-    private(set) var stops = 0
+    private(set) var joined: [HeardSources] = []
+    private(set) var left: [HeardSources] = []
 
-    func start() { starts += 1 }
-    func stop() { stops += 1 }
+    func join(_ sources: HeardSources) { joined.append(sources) }
+    func leave(_ sources: HeardSources) { left.append(sources) }
+    func heard(from sources: HeardSources) -> HeardSpeech { heard }
 }
 
 final class LiveCaptionsEffectTests: XCTestCase {
@@ -18,6 +20,8 @@ final class LiveCaptionsEffectTests: XCTestCase {
     private var bounds: CGRect { CGRect(origin: .zero, size: canvas) }
     private let picture = CIImage(color: .blue).cropped(to: CGRect(x: 0, y: 0, width: 320, height: 180))
     private let clock = Date(timeIntervalSinceReferenceDate: 1000)
+    private let camera = UUID()
+    private lazy var microphone = HeardSources(levels: [camera: 1])
 
     /// How many nearly white pixels there are in a band of rows, counted from the bottom.
     private func whiteCount(_ image: CIImage, rows: ClosedRange<Int>) -> Int {
@@ -34,72 +38,87 @@ final class LiveCaptionsEffectTests: XCTestCase {
     }
 
     private func captions(
-        _ transcriber: FakeTranscriber, saying words: String, secondsAgo: TimeInterval, values: [String: EffectValue] = [:]
+        _ listener: FakeCaptions, saying words: String, secondsAgo: TimeInterval, values: [String: EffectValue] = [:]
     ) -> (LiveCaptionsEffect, CIImage) {
-        transcriber.heard = HeardSpeech(words: words, when: clock.addingTimeInterval(-secondsAgo))
-        let effect = LiveCaptionsEffect(canvas: canvas, listener: SharedSpeechListener(transcriber: transcriber), now: { self.clock })
+        listener.heard = HeardSpeech(words: words, when: clock.addingTimeInterval(-secondsAgo))
+        let effect = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
         effect.setValues(values)
+        effect.hear(microphone)
         return (effect, effect.apply(to: picture, time: 0))
     }
 
     func testWordsJustSaidAreWrittenAlongTheBottomInWhite() {
-        let transcriber = FakeTranscriber()
-        let (_, image) = captions(transcriber, saying: "Hello there", secondsAgo: 1)
+        let listener = FakeCaptions()
+        let (_, image) = captions(listener, saying: "Hello there", secondsAgo: 1)
         XCTAssertEqual(image.extent, bounds)
         // The bottom line sits 18 up a picture 180 tall.
         XCTAssertGreaterThan(whiteCount(image, rows: 10...26), 0, "white words near the bottom")
         XCTAssertEqual(whiteCount(image, rows: 60...179), 0, "and nothing higher up")
-        XCTAssertEqual(transcriber.starts, 1, "the first frame starts the listening")
+        XCTAssertEqual(listener.joined, [microphone], "the first frame starts the listening")
     }
 
     func testTheWordsClearOnceTheTalkingHasStoppedAWhile() {
-        let (_, quiet) = captions(FakeTranscriber(), saying: "Hello there", secondsAgo: 5)
+        let (_, quiet) = captions(FakeCaptions(), saying: "Hello there", secondsAgo: 5)
         XCTAssertEqual(quiet, picture, "four seconds, then gone")
         let (_, longer) = captions(
-            FakeTranscriber(), saying: "Hello there", secondsAgo: 5, values: [LiveCaptionsEffect.lingerKey: .number(8)]
+            FakeCaptions(), saying: "Hello there", secondsAgo: 5, values: [LiveCaptionsEffect.lingerKey: .number(8)]
         )
         XCTAssertNotEqual(longer, picture, "unless they are kept up for longer")
-        let (_, nothing) = captions(FakeTranscriber(), saying: "", secondsAgo: 0)
+        let (_, nothing) = captions(FakeCaptions(), saying: "", secondsAgo: 0)
         XCTAssertEqual(nothing, picture, "nothing said, nothing written")
     }
 
     func testOnlyTheLastLinesShowAndOlderOnesStackAbove() {
         let long = Array(repeating: "and so on", count: 40).joined(separator: " ")
-        let (_, two) = captions(FakeTranscriber(), saying: long, secondsAgo: 0)
+        let (_, two) = captions(FakeCaptions(), saying: long, secondsAgo: 0)
         XCTAssertGreaterThan(whiteCount(two, rows: 28...40), 0, "a second line above the first")
         XCTAssertEqual(whiteCount(two, rows: 44...179), 0, "and no third")
-        let (_, one) = captions(FakeTranscriber(), saying: long, secondsAgo: 0, values: [LiveCaptionsEffect.linesKey: .number(1)])
+        let (_, one) = captions(FakeCaptions(), saying: long, secondsAgo: 0, values: [LiveCaptionsEffect.linesKey: .number(1)])
         XCTAssertEqual(whiteCount(one, rows: 28...179), 0, "one line when asked for one")
         let (_, red) = captions(
-            FakeTranscriber(), saying: "Hello", secondsAgo: 0,
+            FakeCaptions(), saying: "Hello", secondsAgo: 0,
             values: [LiveCaptionsEffect.colorKey: .color(red: 1, green: 0, blue: 0, alpha: 1)]
         )
         XCTAssertEqual(whiteCount(red, rows: 0...179), 0, "in the colour chosen")
     }
 
     func testAPreviewShowsSampleWordsWithoutListening() {
-        let transcriber = FakeTranscriber()
-        let effect = LiveCaptionsEffect(canvas: canvas, listener: SharedSpeechListener(transcriber: transcriber), now: { self.clock })
+        let listener = FakeCaptions()
+        let effect = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
         effect.showSample()
+        effect.hear(microphone)
         XCTAssertGreaterThan(whiteCount(effect.apply(to: picture, time: 0), rows: 10...26), 0)
-        XCTAssertEqual(transcriber.starts, 0)
+        XCTAssertTrue(listener.joined.isEmpty)
     }
 
-    func testEveryCaptionShowingSharesOneListenerThatStopsWithTheLast() {
-        let transcriber = FakeTranscriber()
-        let listener = SharedSpeechListener(transcriber: transcriber)
-        var first: LiveCaptionsEffect? = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
-        var second: LiveCaptionsEffect? = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
-        _ = first?.apply(to: picture, time: 0)
-        _ = second?.apply(to: picture, time: 0)
-        _ = second?.apply(to: picture, time: 1)
-        XCTAssertEqual(transcriber.starts, 1)
-        first = nil
-        XCTAssertEqual(transcriber.stops, 0, "still listening for the other")
-        second = nil
-        XCTAssertEqual(transcriber.stops, 1)
+    func testTheListeningFollowsTheSourcesAboveAndEndsWithTheEffect() {
+        let listener = FakeCaptions()
+        listener.heard = HeardSpeech(words: "Hello", when: clock)
+        var effect: LiveCaptionsEffect? = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
+        XCTAssertTrue(effect?.apply(to: picture, time: 0) === picture, "nothing above it, nothing to hear")
+        XCTAssertTrue(listener.joined.isEmpty)
+
+        effect?.hear(microphone)
+        _ = effect?.apply(to: picture, time: 0)
+        _ = effect?.apply(to: picture, time: 1)
+        XCTAssertEqual(listener.joined, [microphone], "joined once")
+
+        let quieter = HeardSources(levels: [camera: 0.5])
+        effect?.hear(quieter)
+        _ = effect?.apply(to: picture, time: 2)
+        XCTAssertEqual(listener.left, [microphone])
+        XCTAssertEqual(listener.joined, [microphone, quieter])
+
+        effect?.hear(.none)
+        XCTAssertTrue(effect?.apply(to: picture, time: 3) === picture, "its source taken away")
+        XCTAssertEqual(listener.left, [microphone, quieter])
+
+        effect?.hear(microphone)
+        _ = effect?.apply(to: picture, time: 4)
+        effect = nil
+        XCTAssertEqual(listener.left, [microphone, quieter, microphone], "gone, it stops listening")
         _ = LiveCaptionsEffect(canvas: canvas, listener: listener, now: { self.clock })
-        XCTAssertEqual(transcriber.stops, 1, "one that never showed never listened")
+        XCTAssertEqual(listener.left.count, 3, "one that never showed never listened")
     }
 
     func testTextIsBrokenIntoLinesThatFit() {
@@ -123,26 +142,20 @@ final class LiveCaptionsEffectTests: XCTestCase {
     }
 
     func testTheLibraryMakesCaptionsThatListenThroughTheSharedListener() {
-        let transcriber = FakeTranscriber()
-        let made = NativeEffect.liveCaptions(listener: SharedSpeechListener(transcriber: transcriber), now: { self.clock })
+        let listener = FakeCaptions()
+        let made = NativeEffect.liveCaptions(listener: listener, now: { self.clock })
         XCTAssertEqual(made.name, "Live Captions")
-        _ = made.make(canvas).apply(to: picture, time: 0)
-        XCTAssertEqual(transcriber.starts, 1)
+        let effect = made.make(canvas)
+        (effect as? HearsSourcesAbove)?.hear(microphone)
+        _ = effect.apply(to: picture, time: 0)
+        XCTAssertEqual(listener.joined, [microphone])
     }
 
     func testAPictureWithNoSizeHasNothingToWriteOn() {
-        let transcriber = FakeTranscriber()
-        transcriber.heard = HeardSpeech(words: "Hello", when: clock)
-        let effect = LiveCaptionsEffect(canvas: .zero, listener: SharedSpeechListener(transcriber: transcriber), now: { self.clock })
+        let listener = FakeCaptions()
+        listener.heard = HeardSpeech(words: "Hello", when: clock)
+        let effect = LiveCaptionsEffect(canvas: .zero, listener: listener, now: { self.clock })
+        effect.hear(microphone)
         XCTAssertTrue(effect.apply(to: picture, time: 0) === picture)
-    }
-
-    func testTheSilentListenerHearsNothingAndTheMacsIsMadeWithoutListening() {
-        let silent = SharedSpeechListener.silent
-        silent.join()
-        XCTAssertEqual(silent.heard, .nothing)
-        silent.leave()
-        XCTAssertEqual(SharedSpeechListener.onThisMac(now: Date.init).heard, .nothing, "nothing heard before it starts")
-        XCTAssertTrue(RenderingSupplies.system().speech === SharedSpeechListener.silent)
     }
 }

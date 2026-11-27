@@ -10,10 +10,18 @@ protocol SamplePreviewing: AnyObject {
     func showSample()
 }
 
-/// What is said, written along the bottom of the picture as it is said,
-/// like subtitles. Only the last few lines show, and they clear a few
-/// seconds after the talking stops.
-public final class LiveCaptionsEffect: ImageEffect, SamplePreviewing {
+/// An effect that hears the sources above it in its scene.
+protocol HearsSourcesAbove: AnyObject {
+    /// The sources above it that make sound, each with how loud it is.
+    /// Told again before every frame.
+    func hear(_ sources: HeardSources)
+}
+
+/// What is said in the sources above it, written along the bottom of the
+/// picture as it is said, like subtitles. Each source is heard as loud as
+/// it is in the mix, so one turned right down is left out. Only the last
+/// few lines show, and they clear a few seconds after the talking stops.
+public final class LiveCaptionsEffect: ImageEffect, SamplePreviewing, HearsSourcesAbove {
     public static let name = "Live Captions"
     public static let fontKey = EffectParameterKey.fontName
     public static let colorKey = EffectParameterKey.color
@@ -49,24 +57,30 @@ public final class LiveCaptionsEffect: ImageEffect, SamplePreviewing {
     public static let parameters = look.parameters + [size.parameter, y.parameter, lines.parameter, linger.parameter]
 
     private let canvas: CGSize
-    private let listener: SharedSpeechListener
+    private let listener: CaptionsListening
     private let now: () -> Date
     private var values: [String: EffectValue] = [:]
-    private var hasJoined = false
+    private var wanted = HeardSources.none
+    /// What it is listening to now, once a frame has been shown.
+    private var joined: HeardSources?
     private var isSample = false
 
-    init(canvas: CGSize, listener: SharedSpeechListener, now: @escaping () -> Date) {
+    init(canvas: CGSize, listener: CaptionsListening, now: @escaping () -> Date) {
         self.canvas = canvas
         self.listener = listener
         self.now = now
     }
 
     deinit {
-        if hasJoined { listener.leave() }
+        if let joined { listener.leave(joined) }
     }
 
     public func setValues(_ values: [String: EffectValue]) {
         self.values = values
+    }
+
+    func hear(_ sources: HeardSources) {
+        wanted = sources
     }
 
     /// A preview shows sample words and never starts listening.
@@ -101,13 +115,16 @@ public final class LiveCaptionsEffect: ImageEffect, SamplePreviewing {
     }
 
     /// The words heard lately, or none once the talking stopped a while ago.
-    /// The first frame shown starts the listening.
+    /// The first frame shown starts the listening, and a change in what is
+    /// above it moves the listening over.
     private func heardWords() -> String {
-        if !hasJoined {
-            hasJoined = true
-            listener.join()
+        if joined != wanted {
+            if let joined { listener.leave(joined) }
+            joined = wanted.isEmpty ? nil : wanted
+            if let joined { listener.join(joined) }
         }
-        let heard = listener.heard
+        guard let joined else { return "" }
+        let heard = listener.heard(from: joined)
         let quietFor = now().timeIntervalSince(heard.when)
         return quietFor <= Self.linger.value(in: values) ? heard.words : ""
     }
@@ -134,7 +151,7 @@ public final class LiveCaptionsEffect: ImageEffect, SamplePreviewing {
 }
 
 extension NativeEffect {
-    static func liveCaptions(listener: SharedSpeechListener, now: @escaping () -> Date) -> NativeEffect {
+    static func liveCaptions(listener: CaptionsListening, now: @escaping () -> Date) -> NativeEffect {
         NativeEffect(name: LiveCaptionsEffect.name, kind: .overlay, parameters: LiveCaptionsEffect.parameters) { canvas in
             LiveCaptionsEffect(canvas: canvas, listener: listener, now: now)
         }

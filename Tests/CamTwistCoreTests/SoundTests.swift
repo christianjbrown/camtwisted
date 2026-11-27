@@ -51,6 +51,13 @@ final class SoundTests: XCTestCase {
         XCTAssertFalse(SceneSound.isHeard(in: []))
         XCTAssertTrue(SceneSound.isHeard(in: [quietScene, scene]))
     }
+
+    func testOneStepIsAsLoudAsItsSourceAndAnEffectHasNoLevel() {
+        XCTAssertEqual(SceneSound.level(of: ChainItem(content: .source(.microphone(deviceID: nil)), volume: 0.3)), 0.3)
+        XCTAssertEqual(SceneSound.level(of: ChainItem(content: .source(.microphone(deviceID: nil)))), 1)
+        XCTAssertNil(SceneSound.level(of: ChainItem(content: .source(.colorBars))))
+        XCTAssertNil(SceneSound.level(of: ChainItem(content: .effect(name: "Glow", values: [:]))))
+    }
 }
 
 final class MicrophoneContractTests: XCTestCase {

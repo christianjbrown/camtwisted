@@ -9,7 +9,7 @@ adverts and no tracking. What you make stays on your Mac unless you send it some
 | --- | --- | --- |
 | Camera | To show your camera in a scene | Nowhere, unless you switch on an output |
 | Microphone | To carry sound with the picture | Nowhere, unless you switch on an output |
-| Speech recognition | Only when you add Live Captions, to write down what you say | Nowhere: it runs on your Mac, and the words are shown and then forgotten |
+| Speech recognition | Only when you add Live Captions, to write down what is said in the sources above them | Nowhere: it runs on your Mac, and the words are shown and then forgotten |
 | Screen and windows | Only when you add a Screen or Window source | Nowhere, unless you switch on an output |
 | Local network | To find a Chromecast or Apple TV, and to serve a stream to devices on your network | Only the devices you choose |
 | Files you pick | Pictures, videos and setup files you open | They are read where they are, and not copied or uploaded |

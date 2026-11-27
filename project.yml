@@ -58,8 +58,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSCameraUsageDescription: Your cameras are video sources you can send to the virtual camera.
-        NSMicrophoneUsageDescription: The web streams can carry the sound of the microphones and cameras in a scene, and Live Captions listen to what you say.
-        NSSpeechRecognitionUsageDescription: Live Captions write down what you say, on this Mac. Nothing you say leaves it.
+        NSMicrophoneUsageDescription: The web streams can carry the sound of the microphones and cameras in a scene, and Live Captions can write down what is said in them.
+        NSSpeechRecognitionUsageDescription: Live Captions write down what is said in your scene, on this Mac. Nothing said leaves it.
         ATSApplicationFontsPath: Fonts
         NSPrincipalClass: NSApplication
         CFBundleIconFile: AppIcon

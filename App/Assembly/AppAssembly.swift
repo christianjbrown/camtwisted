@@ -39,7 +39,10 @@ enum AppAssembly {
     ) -> AppModel {
         let basics = Basics(configuration: configuration)
         let sources = SourceSet(basics)
-        let effects = EffectSet(basics)
+        let registry = sources.registry
+        // One place every source's sound is heard from, by the mix and by captions alike.
+        let taps = SoundTaps { registry.source(for: $0) as? SoundSource }
+        let effects = EffectSet(basics, taps: taps)
         let outputs = OutputSet(basics)
         let renderLoop = renderLoop(basics, sources: sources, effects: effects, outputs: outputs, monitors: monitors)
         return AppModelAssembly.model(AppParts(
@@ -62,7 +65,7 @@ enum AppAssembly {
                 )
             ),
             outputs: outputs.parts(airPlay: airPlay, cast: cast),
-            sound: soundParts(basics, sources: sources, outputs: outputs),
+            sound: soundParts(basics, taps: taps, outputs: outputs),
             capture: outputs.captureParts(basics),
             control: ControlParts(
                 midi: MIDIListener(main: .main), shortcuts: HotKeyListener(), scripts: AppleScriptRunner()

@@ -43,16 +43,22 @@ public final class SceneRenderer {
         // afresh when it comes back.
         let showing = Set(scene.sourcesInUse.keys)
         animationStarts = animationStarts.filter { showing.contains($0.key) }
-        return compositor.compose(layers(for: scene.items, time: time), time: time)
+        return compositor.compose(layers(for: scene.items, hearing: [:], time: time), time: time)
     }
 
     /// Resolves a list of steps into what each draws. A source with a
     /// branch is drawn with its branch first, as a picture of its own, and
     /// only then takes its place in this list.
-    private func layers(for items: [ChainItem], time: TimeInterval) -> [CompositorLayer] {
-        items.filter(\.isEnabled).compactMap { item in
+    ///
+    /// - Parameter hearing: the sources an effect at the top of the list
+    ///   hears, by step, with how loud each is. Every source with sound
+    ///   joins them for the effects below it.
+    private func layers(for items: [ChainItem], hearing: [UUID: Double], time: TimeInterval) -> [CompositorLayer] {
+        var above = hearing
+        return items.filter(\.isEnabled).compactMap { item in
             switch item.content {
             case .source:
+                defer { above[item.id] = SceneSound.level(of: item) }
                 return .picture(
                     picture(of: item, time: time), placement: placement(of: item, time: time), fit: item.fit ?? .fill
                 )
@@ -62,6 +68,7 @@ public final class SceneRenderer {
                 }
                 guard let effect = effects[item.id] else { return nil }
                 effect.setValues(values)
+                (effect as? HearsSourcesAbove)?.hear(HeardSources(levels: above))
                 return .effect(effect)
             case .script:
                 // Scripts act when switched on; they draw nothing.
@@ -83,7 +90,9 @@ public final class SceneRenderer {
         let base = CompositorLayer.picture(frame, placement: nil)
         // Over nothing, not over black: a source with clear parts, such as a
         // telestrator or text, keeps them clear with a branch too.
-        return compositor.composeClear([base] + layers(for: branch, time: time), time: time)
+        // A branch's effects hear the source the branch belongs to.
+        let own = SceneSound.level(of: item).map { [item.id: $0] } ?? [:]
+        return compositor.composeClear([base] + layers(for: branch, hearing: own, time: time), time: time)
     }
 
     /// Where a source sits right now, with its animations run on from the
