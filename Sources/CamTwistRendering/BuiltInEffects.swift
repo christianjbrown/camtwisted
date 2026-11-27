@@ -28,7 +28,8 @@ public enum BuiltInEffects {
             .freezeFrame(pixels: pixels),
             .flame(pixels: pixels, seed: seed),
             .matrix(pixels: pixels, seed: seed),
-        ] 
+            .liveCaptions(listener: supplies.speech, now: supplies.now),
+        ]
             + NativeEffect.studioFilters + NativeEffect.looks + NativeEffect.classicFilters
             + NativeEffect.motionFilters + NativeEffect.skyEffects + NativeEffect.textEffects
             + NativeEffect.backgrounds(masker: supplies.makeMasker)

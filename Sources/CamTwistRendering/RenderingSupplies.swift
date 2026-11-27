@@ -14,29 +14,37 @@ public struct RenderingSupplies {
     let makeMasker: () -> PersonMasking
     /// Makes what finds the face in a picture.
     let makeFaceTracker: () -> FaceTracking
+    /// Writes down what is said, for captions. One for the whole app.
+    let speech: SharedSpeechListener
 
     /// Zero is not a usable seed for the generators, so the range starts at one.
     private static let seeds: ClosedRange<UInt32> = 1...UInt32.max
 
     init(
         pixels: PixelAccess, seed: @escaping () -> UInt32, now: @escaping () -> Date,
-        makeMasker: @escaping () -> PersonMasking, makeFaceTracker: @escaping () -> FaceTracking
+        makeMasker: @escaping () -> PersonMasking, makeFaceTracker: @escaping () -> FaceTracking,
+        speech: SharedSpeechListener
     ) {
         self.pixels = pixels
         self.seed = seed
         self.now = now
         self.makeMasker = makeMasker
         self.makeFaceTracker = makeFaceTracker
+        self.speech = speech
     }
 
     /// The system's own, which is what the app runs with.
-    public static func system() -> RenderingSupplies {
+    ///
+    /// - Parameter speech: what captions listen through. The app hands in
+    ///   the Mac's own; left out, captions hear nothing.
+    public static func system(speech: SharedSpeechListener = .silent) -> RenderingSupplies {
         RenderingSupplies(
             pixels: CoreImagePixelAccess(context: RenderingSystem.makeContext()),
             seed: { UInt32.random(in: seeds) },
             now: Date.init,
             makeMasker: { VisionPersonMasker() },
-            makeFaceTracker: { VisionFaceTracker() }
+            makeFaceTracker: { VisionFaceTracker() },
+            speech: speech
         )
     }
 }
