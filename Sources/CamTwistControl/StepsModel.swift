@@ -25,11 +25,13 @@ public final class StepsModel: StepAdding, FileAdding {
     private unowned let state: StepEditingState
     private let builder: StepBuilding
     private let choices: StartingChoices
+    private let companions: StepCompanions
 
-    init(state: StepEditingState, builder: StepBuilding, choices: StartingChoices) {
+    init(state: StepEditingState, builder: StepBuilding, choices: StartingChoices, companions: StepCompanions) {
         self.state = state
         self.builder = builder
         self.choices = choices
+        self.companions = companions
     }
 
     /// Adds a step where additions are currently going: the main chain, or
@@ -43,12 +45,26 @@ public final class StepsModel: StepAdding, FileAdding {
     }
 
     /// Adds a step with its settings open and ready to be dragged about on
-    /// the picture.
+    /// the picture, along with anything it needs just above it.
     public func add(_ content: ChainItem.Content, before target: UUID?, inBranchOf parent: UUID?) {
         let item = builder.item(for: content)
+        let above = steps(above: target, inBranchOf: parent)
+        for companion in companions.companions(for: content, above: above) {
+            state.editedScene.insert(builder.item(for: companion), before: target, inBranchOf: parent)
+        }
         state.editedScene.insert(item, before: target, inBranchOf: parent)
         state.expandedSteps.insert(item.id)
         state.selectedStepID = item.id
+    }
+
+    /// The steps a new one would sit below: those before it in its list,
+    /// and in a branch, the source the branch belongs to as well.
+    private func steps(above target: UUID?, inBranchOf parent: UUID?) -> [ChainItem] {
+        let scene = state.editedScene
+        let owner = parent.flatMap(scene.item(id:))
+        let list = parent == nil ? scene.items : owner?.branch ?? []
+        let before = Array(list.prefix { $0.id != target })
+        return (owner.map { [$0] } ?? []) + before
     }
 
     /// Adds the image and video files among some dropped on the picture.
