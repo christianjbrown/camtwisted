@@ -168,7 +168,7 @@ Switch it on and everything that is not a person disappears, so whatever is unde
 shows through instead. No green screen, no lighting rig, no tidying the spare room. It works on a
 camera, a video, a still photo, anything with people in it.
 
-![An astronaut cut out of his photo and stood in front of the Earth](docs/images/remove-background.png)
+![An astronaut cut out of her photo and stood in front of the Earth](docs/images/remove-background.png)
 
 That is a portrait photo with its studio backdrop taken away, sat over a picture of the Earth.
 Swap the photo for your camera and the Earth for your slides, and you are presenting from
