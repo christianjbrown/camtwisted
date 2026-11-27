@@ -266,6 +266,7 @@ extension NativeEffect {
             },
             worn(Antennae.name, Antennae()),
             worn(PixelSunglasses.name, PixelSunglasses()),
+            worn(Moustache.name, Moustache()),
             NativeEffect(name: BigEyesEffect.name, kind: .filter, parameters: BigEyesEffect.parameters) { canvas in
                 BigEyesEffect(canvas: canvas, follower: follower(in: canvas, share: tuning.wornSmoothing))
             },

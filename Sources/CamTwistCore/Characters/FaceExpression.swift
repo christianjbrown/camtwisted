@@ -43,6 +43,9 @@ public struct FaceExpression: Equatable, Sendable {
         /// the face, and this many apart.
         static let eyesAbove: CGFloat = 0.15
         static let eyesApart: CGFloat = 0.45
+        /// The top of the lip, under the nose, is about this many face
+        /// heights below the eyes.
+        static let upperLipBelowEyes: CGFloat = 0.38
     }
 
     /// The middle of the face, in the picture's points.
@@ -54,6 +57,9 @@ public struct FaceExpression: Equatable, Sendable {
     /// The point half way between the eyes, and how far apart they are.
     public var eyeLine: CGPoint
     public var eyeSpan: CGFloat
+    /// The point half way between the bottom of the nose and the top of
+    /// the lip, where a moustache grows, in the picture's points.
+    public var upperLip: CGPoint
     /// The head's lean, in radians anticlockwise.
     public var roll: CGFloat
     /// Which way the head faces: -1 to the left of the picture, 1 to the right.
@@ -73,7 +79,7 @@ public struct FaceExpression: Equatable, Sendable {
 
     public init(
         centre: CGPoint, height: CGFloat, crown: CGPoint? = nil, eyeLine: CGPoint? = nil, eyeSpan: CGFloat? = nil,
-        roll: CGFloat = 0, turn: CGFloat = 0, nod: CGFloat = 0,
+        upperLip: CGPoint? = nil, roll: CGFloat = 0, turn: CGFloat = 0, nod: CGFloat = 0,
         leftEyeOpen: CGFloat = 1, rightEyeOpen: CGFloat = 1, leftBrow: CGFloat = 0, rightBrow: CGFloat = 0,
         mouthOpen: CGFloat = 0, smile: CGFloat = 0
     ) {
@@ -85,6 +91,11 @@ public struct FaceExpression: Equatable, Sendable {
         // The same goes for the eyes: where a face's usually are.
         self.eyeLine = eyeLine ?? CGPoint(x: centre.x, y: centre.y + height * Resting.eyesAbove)
         self.eyeSpan = eyeSpan ?? height * Resting.eyesApart
+        // And the lip: straight below the eyes, along the head's lean.
+        let lipDrop = height * Resting.upperLipBelowEyes
+        self.upperLip = upperLip ?? CGPoint(
+            x: self.eyeLine.x + sin(roll) * lipDrop, y: self.eyeLine.y - cos(roll) * lipDrop
+        )
         self.roll = roll
         self.turn = turn
         self.nod = nod
@@ -117,6 +128,7 @@ public struct FaceExpression: Equatable, Sendable {
             crown: CGPoint(x: mix(\.crown.x), y: mix(\.crown.y)),
             eyeLine: CGPoint(x: mix(\.eyeLine.x), y: mix(\.eyeLine.y)),
             eyeSpan: mix(\.eyeSpan),
+            upperLip: CGPoint(x: mix(\.upperLip.x), y: mix(\.upperLip.y)),
             roll: mix(\.roll), turn: mix(\.turn), nod: mix(\.nod),
             leftEyeOpen: mix(\.leftEyeOpen), rightEyeOpen: mix(\.rightEyeOpen),
             leftBrow: mix(\.leftBrow), rightBrow: mix(\.rightBrow),
@@ -197,12 +209,18 @@ public enum FaceExpressionReader {
         let lips = levelled(face.outerLips)
         // Up the face's own upright from the eyes, however the head leans.
         let rise = -middle(of: lips).y * Measure.crownOverMouth * span
+        // Half way from the bottom of the nose down to the top of the lip,
+        // back out of the face's own frame into the picture's.
+        let noseBottom = levelled(face.nose).map(\.y).reduce(nose.y, min)
+        let lipTop = lips.map(\.y).reduce(lips[0].y, max)
+        let upperLip = CGPoint(x: middle(of: lips).x, y: (noseBottom + lipTop) / 2).applying(level.inverted())
         return FaceExpression(
             centre: CGPoint(x: face.box.midX, y: face.box.midY),
             height: face.box.height,
             crown: CGPoint(x: origin.x - sin(roll) * rise, y: origin.y + cos(roll) * rise),
             eyeLine: origin,
             eyeSpan: span,
+            upperLip: upperLip,
             roll: roll,
             turn: signed(nose.x / Measure.noseReach),
             nod: signed((nose.y - Measure.noseAtRest) / Measure.nodReach),

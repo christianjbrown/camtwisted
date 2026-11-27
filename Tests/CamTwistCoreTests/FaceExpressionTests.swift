@@ -127,6 +127,18 @@ final class FaceExpressionTests: XCTestCase {
         XCTAssertEqual(expression.eyeSpan, 37, accuracy: 0.001)
     }
 
+    func testTheUpperLipIsHalfWayFromTheNoseToTheMouthAndLeansWithTheHead() throws {
+        // The nose is half an eye distance below the eyes and the mouth 1.1.
+        let level = try read(Drawn()).upperLip
+        XCTAssertEqual(level.x, 500, accuracy: accuracy)
+        XCTAssertEqual(level.y, 320, accuracy: accuracy)
+        var face = Drawn()
+        face.roll = 0.4
+        let lip = try read(face).upperLip
+        XCTAssertEqual(lip.x, 500 + sin(0.4) * 80, accuracy: 0.001)
+        XCTAssertEqual(lip.y, 400 - cos(0.4) * 80, accuracy: 0.001)
+    }
+
     func testThePairsAreSortedByWhereTheySit() throws {
         var face = Drawn()
         face.leftEye = 0.14
@@ -178,6 +190,11 @@ final class FaceExpressionTests: XCTestCase {
         XCTAssertEqual(resting.crown, CGPoint(x: 500, y: 405), "the top of the head is straight above the face")
         XCTAssertEqual(resting.eyeLine, CGPoint(x: 500, y: 322.5), "and the eyes are where a face's usually are")
         XCTAssertEqual(resting.eyeSpan, 67.5)
+        XCTAssertEqual(resting.upperLip.y, 322.5 - 57, accuracy: accuracy, "and the lip below them")
+        XCTAssertEqual(resting.upperLip.x, 500, accuracy: accuracy)
+        XCTAssertEqual(
+            FaceExpression(centre: .zero, height: 10, upperLip: CGPoint(x: 1, y: 2)).upperLip, CGPoint(x: 1, y: 2)
+        )
         let measured = FaceExpression(centre: .zero, height: 10, eyeLine: CGPoint(x: 3, y: 4), eyeSpan: 5)
         XCTAssertEqual(measured.eyeLine, CGPoint(x: 3, y: 4))
         XCTAssertEqual(measured.eyeSpan, 5)
@@ -197,6 +214,9 @@ final class FaceExpressionTests: XCTestCase {
             rightEyeOpen: 0.75, leftBrow: 0.5, rightBrow: -0.5, mouthOpen: 0.5, smile: 0.25
         ))
         assertClose(from.blended(towards: to, by: 1), to)
+        let lips = FaceExpression(centre: .zero, height: 100, upperLip: .zero)
+            .blended(towards: FaceExpression(centre: .zero, height: 100, upperLip: CGPoint(x: 10, y: -20)), by: 0.5)
+        XCTAssertEqual(lips.upperLip, CGPoint(x: 5, y: -10))
         assertClose(from.blended(towards: to, by: 0), from)
     }
 
