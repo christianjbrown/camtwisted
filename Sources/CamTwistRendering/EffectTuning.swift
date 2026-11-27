@@ -17,10 +17,13 @@ public struct EffectTuning: Equatable {
     public var characterSmoothing: Double
     /// The same for something worn, which must keep closer to the head.
     public var wornSmoothing: Double
+    /// The same for a picture framed on a face, which glides gently like a
+    /// camera operator rather than jumping with every move.
+    public var framingSmoothing: Double
 
     public init(
         slowMotionFramesPerSecond: Double, slowMotionLongestLag: Double, slowMotionWidestFrame: Double,
-        faceFramesHeld: Int, characterSmoothing: Double, wornSmoothing: Double
+        faceFramesHeld: Int, characterSmoothing: Double, wornSmoothing: Double, framingSmoothing: Double
     ) {
         self.slowMotionFramesPerSecond = slowMotionFramesPerSecond
         self.slowMotionLongestLag = slowMotionLongestLag
@@ -28,5 +31,6 @@ public struct EffectTuning: Equatable {
         self.faceFramesHeld = faceFramesHeld
         self.characterSmoothing = characterSmoothing
         self.wornSmoothing = wornSmoothing
+        self.framingSmoothing = framingSmoothing
     }
 }

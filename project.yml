@@ -29,6 +29,11 @@ targets:
       # The example show from the File menu, the same file the README pictures use.
       - path: docs/demo/Demo show.camtwisted
         buildPhase: resources
+      # Open Sans, the font captions start in, with its licence. The app
+      # loads every font in this folder for itself (ATSApplicationFontsPath).
+      - path: Resources/Fonts
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: CamTwistCore
         product: CamTwistCore
@@ -53,7 +58,9 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSCameraUsageDescription: Your cameras are video sources you can send to the virtual camera.
-        NSMicrophoneUsageDescription: The web streams can carry the sound of the microphones and cameras in a scene.
+        NSMicrophoneUsageDescription: The web streams can carry the sound of the microphones and cameras in a scene, and Live Captions listen to what you say.
+        NSSpeechRecognitionUsageDescription: Live Captions write down what you say, on this Mac. Nothing you say leaves it.
+        ATSApplicationFontsPath: Fonts
         NSPrincipalClass: NSApplication
         CFBundleIconFile: AppIcon
         NSHumanReadableCopyright: © 2026 Christian Brown

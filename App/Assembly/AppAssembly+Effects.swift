@@ -13,7 +13,7 @@ extension AppAssembly {
         init(_ basics: Basics) {
             let configuration = basics.configuration
             let pacing = basics.pacing
-            supplies = RenderingSupplies.system()
+            supplies = RenderingSupplies.system(speech: .onThisMac(now: Date.init))
             transitions = BuiltInEffects.transitionLibrary(directory: configuration.effectsDirectory)
             // Built-in effects and transitions come first, so one takes the
             // place of a file of the same name.

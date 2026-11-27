@@ -9,7 +9,7 @@ final class BuiltInEffectsTests: XCTestCase {
     private let canvas = CGSize(width: 320, height: 180)
     private let tuning = EffectTuning(
         slowMotionFramesPerSecond: 12, slowMotionLongestLag: 2.5, slowMotionWidestFrame: 1280, faceFramesHeld: 10,
-        characterSmoothing: 0.6, wornSmoothing: 0.85
+        characterSmoothing: 0.6, wornSmoothing: 0.85, framingSmoothing: 0.06
     )
 
     /// A folder that exists and has nothing in it, as the effects folder is on a fresh Mac.

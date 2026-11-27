@@ -39,6 +39,8 @@ public final class EffectThumbnailer {
         // The sample figure has no face to find, so an effect that follows
         // one is shown where its head is.
         (effect as? FacePosable)?.rest(at: Self.sampleFace(size: size))
+        // Nor does it say anything, so captions show sample words.
+        (effect as? SamplePreviewing)?.showSample()
         let bounds = CGRect(origin: .zero, size: size)
         var output = sample
         for frame in 0..<Tuning.warmUpFrames {

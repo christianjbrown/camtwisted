@@ -14,7 +14,7 @@ final class TunablesTests: XCTestCase {
         let usual = Tunables.load(defaults: defaults([:]))
         XCTAssertEqual(usual.effects, EffectTuning(
             slowMotionFramesPerSecond: 12, slowMotionLongestLag: 2.5, slowMotionWidestFrame: 1280, faceFramesHeld: 10,
-            characterSmoothing: 0.6, wornSmoothing: 0.85
+            characterSmoothing: 0.6, wornSmoothing: 0.85, framingSmoothing: 0.06
         ))
         XCTAssertEqual(usual.refreshInterval, 2)
         XCTAssertEqual(usual.pacing, Pacing.usual)
@@ -24,7 +24,8 @@ final class TunablesTests: XCTestCase {
         let turned = Tunables.load(defaults: defaults([
             Tunables.Key.slowMotionFramesPerSecond: 24, Tunables.Key.slowMotionLongestLag: 4,
             Tunables.Key.slowMotionWidestFrame: 640, Tunables.Key.faceFramesHeld: 30,
-            Tunables.Key.characterSmoothing: 0.3, Tunables.Key.wornSmoothing: 0.9, Tunables.Key.refreshInterval: 5,
+            Tunables.Key.characterSmoothing: 0.3, Tunables.Key.wornSmoothing: 0.9, Tunables.Key.framingSmoothing: 0.2,
+            Tunables.Key.refreshInterval: 5,
             Pacing.Key.castPingInterval: 9, Pacing.Key.streamPiecesKept: 3,
         ]))
         var pacing = Pacing.usual
@@ -33,7 +34,7 @@ final class TunablesTests: XCTestCase {
         XCTAssertEqual(turned, Tunables(
             effects: EffectTuning(
                 slowMotionFramesPerSecond: 24, slowMotionLongestLag: 4, slowMotionWidestFrame: 640, faceFramesHeld: 30,
-                characterSmoothing: 0.3, wornSmoothing: 0.9
+                characterSmoothing: 0.3, wornSmoothing: 0.9, framingSmoothing: 0.2
             ),
             refreshInterval: 5,
             pacing: pacing

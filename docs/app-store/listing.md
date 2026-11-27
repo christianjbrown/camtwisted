@@ -31,7 +31,7 @@ SOURCES
 Any webcam. A whole screen, part of one, or a single window. Videos and playlists. Slide shows. Web pages. Live streams. Pictures, text in any font, and shapes. A pen for drawing on the picture.
 
 EFFECTS
-Titles, a news headline, a clock and a countdown. Blur the background, or remove it with no green screen. Become a toy figure whose face copies yours, grow a pair of alien antennae, put on pixel sunglasses, or give yourself big eyes. Play it back in slow motion or as a stop motion film. Looks such as black and white, sepia, comic book and charcoal sketch. Crop, mask, mirror and kaleidoscope. Wrap the picture round a cube or a sphere. Every effect has a preview, and you can load your own.
+Titles, a news headline, a clock and a countdown. Live captions that write down what you say as you say it, on your Mac. Blur the background, or remove it with no green screen. Let the picture follow you as you move about. Become a toy figure whose face copies yours, grow a pair of alien antennae, put on pixel sunglasses or a moustache, or give yourself big eyes. Play it back in slow motion or as a stop motion film. Looks such as black and white, sepia, comic book and charcoal sketch. Crop, mask, mirror and kaleidoscope. Wrap the picture round a cube or a sphere. Every effect has a preview, and you can load your own.
 
 MAKE IT YOURS
 Drag things about on the picture itself: the middle to move, a corner to resize, the knob to turn. Shrink any source into a corner, tilt it, and set it moving. Give one source effects of its own.
@@ -74,7 +74,8 @@ These have to be public, so they work once the repository is public.
 ## App privacy
 
 Data collection: none. The app has no accounts, no analytics and no advertising, and nothing
-leaves the Mac except the streams the person switches on.
+leaves the Mac except the streams the person switches on. Live Captions use the Mac's own speech
+recognition, held to the device, so speech is never sent anywhere.
 
 ## Notes for App Review
 
@@ -86,7 +87,8 @@ CamTwisted provides a virtual camera through a Camera Extension. To see it worki
 3. Open FaceTime or Photo Booth and choose "CamTwisted Virtual Camera output" as the camera.
 4. Back in CamTwisted, add an effect from "Add an effect": the other app shows the change.
 
-The app uses the camera and microphone as sources for the picture and its sound, records the
+The app uses the camera and microphone as sources for the picture and its sound, and speech
+recognition, on the device only, when the person adds Live Captions. It records the
 screen only when the person adds a Screen or Window source, and uses the local network only
 for the streams and devices the person switches on.
 

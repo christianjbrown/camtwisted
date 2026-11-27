@@ -91,7 +91,7 @@ final class TimeEffectTests: XCTestCase {
     func testTheTimeEffectsAreBuiltIn() {
         let tuning = EffectTuning(
             slowMotionFramesPerSecond: 12, slowMotionLongestLag: 2.5, slowMotionWidestFrame: 1280, faceFramesHeld: 10,
-            characterSmoothing: 0.6, wornSmoothing: 0.85
+            characterSmoothing: 0.6, wornSmoothing: 0.85, framingSmoothing: 0.06
         )
         let effects = NativeEffect.timeEffects(pixels: access, tuning: tuning)
         XCTAssertEqual(effects.map(\.name), ["Stop Motion", "Slow Motion"])

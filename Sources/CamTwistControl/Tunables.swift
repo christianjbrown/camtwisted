@@ -21,6 +21,7 @@ public struct Tunables: Equatable {
         public static let faceFramesHeld = "FaceFramesHeld"
         public static let characterSmoothing = "CharacterSmoothing"
         public static let wornSmoothing = "WornSmoothing"
+        public static let framingSmoothing = "FramingSmoothing"
         public static let refreshInterval = "RefreshInterval"
     }
 
@@ -36,6 +37,8 @@ public struct Tunables: Equatable {
         /// Quick enough that a blink still shows.
         static let characterSmoothing = 0.6
         static let wornSmoothing = 0.85
+        /// Slow enough that following a face looks like a smooth pan.
+        static let framingSmoothing = 0.06
         static let refreshInterval: TimeInterval = 2
     }
 
@@ -64,7 +67,8 @@ public struct Tunables: Equatable {
                 slowMotionWidestFrame: number(Key.slowMotionWidestFrame, Default.slowMotionWidestFrame),
                 faceFramesHeld: count(Key.faceFramesHeld, Default.faceFramesHeld),
                 characterSmoothing: number(Key.characterSmoothing, Default.characterSmoothing),
-                wornSmoothing: number(Key.wornSmoothing, Default.wornSmoothing)
+                wornSmoothing: number(Key.wornSmoothing, Default.wornSmoothing),
+                framingSmoothing: number(Key.framingSmoothing, Default.framingSmoothing)
             ),
             refreshInterval: number(Key.refreshInterval, Default.refreshInterval),
             pacing: Pacing.load(defaults: defaults)

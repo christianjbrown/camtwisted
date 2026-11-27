@@ -45,6 +45,8 @@ struct TextLook {
     let shadowKey: String
     /// Nil for text that has no box behind it.
     let backgroundKey: String?
+    /// The font it starts in.
+    var startFont = TextLook.defaultFont
 
     private static let clear = CGColor(gray: 0, alpha: 0)
 
@@ -52,7 +54,7 @@ struct TextLook {
         let clearColor = EffectValue.color(red: 0, green: 0, blue: 0, alpha: 0)
         var controls = [
             EffectParameter(
-                key: fontKey, displayName: "Font Name", kind: .string, defaultValue: .string(Self.defaultFont), isFont: true
+                key: fontKey, displayName: "Font Name", kind: .string, defaultValue: .string(startFont), isFont: true
             ),
             ColorControl(key: colorKey, displayName: "Color", red: 1, green: 1, blue: 1).parameter,
             // Shadows and boxes start clear, which is off. Their controls are there to turn them on.
@@ -67,7 +69,7 @@ struct TextLook {
     }
 
     func fontName(in values: [String: EffectValue]) -> String {
-        values.string(fontKey, default: Self.defaultFont)
+        values.string(fontKey, default: startFont)
     }
 
     func color(in values: [String: EffectValue]) -> CGColor {

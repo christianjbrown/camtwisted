@@ -105,7 +105,13 @@ A few favourites:
 - **Alien Antennae**, a bobbing pair on top of your head. 👽 They follow whoever is nearest
   the camera.
 - **Pixel Sunglasses**, the chunky kind, sat on your eyes. 😎
+- **Moustache**, a curly handlebar under your nose, black or any colour you fancy. 🥸
 - **Big Eyes**, which makes yours bigger. 👀
+- **Follow Me**, which zooms in on you and glides along as you move about, like your own
+  camera operator. 🎬
+- **Live Captions**, your words written along the bottom as you say them. Pick the font
+  (Open Sans to start), colour, size and shadow. It all happens on your Mac: nothing you say
+  goes anywhere. 💬
 - **Stop Motion** and **Slow Motion**, for a jerky claymation look or a dreamy replay.
 - **Black and White, Sepia, Charcoal sketch, Comic Book, Thermal** and other looks.
 - **Crop, Mask, Vignette, Pixelate, Mirror, Kaleidoscope** to reshape the picture.
@@ -470,6 +476,9 @@ Thank you to Steve Green, who made CamTwist, for kindly answering an email out o
 
 The astronaut portraits and the Earth in the pictures in this guide are NASA photographs, which
 are in the public domain. 🚀
+
+Live Captions start in Open Sans, by the Open Sans Project Authors, which comes with the app
+under the SIL Open Font License (`Resources/Fonts/OFL.txt`). 🔤
 
 ## Licence 📄
 

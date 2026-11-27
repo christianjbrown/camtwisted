@@ -38,7 +38,7 @@ final class CharacterEffectTests: XCTestCase {
     private let patience = 10
     private let tuning = EffectTuning(
         slowMotionFramesPerSecond: 12, slowMotionLongestLag: 2.5, slowMotionWidestFrame: 1280, faceFramesHeld: 10,
-        characterSmoothing: 0.6, wornSmoothing: 0.85
+        characterSmoothing: 0.6, wornSmoothing: 0.85, framingSmoothing: 0.06
     )
 
     /// Red, green, blue and alpha at a point counted from the bottom left, as pictures are.
@@ -319,6 +319,70 @@ final class CharacterEffectTests: XCTestCase {
         XCTAssertEqual(WornEffect.parameters(for: PixelSunglasses()).map(\.key), ["Size", "Color"])
     }
 
+    // MARK: The moustache
+
+    func testTheMoustacheSitsOnTheLipAndTakesItsColour() {
+        // Eyes 50 apart, so the moustache is about 62 across.
+        let wearer = FaceExpression(
+            centre: CGPoint(x: 160, y: 80), height: 40, eyeLine: CGPoint(x: 160, y: 90), eyeSpan: 50,
+            upperLip: CGPoint(x: 160, y: 60)
+        )
+        func drawn(_ expression: FaceExpression, values: [String: EffectValue] = [:]) -> CIImage {
+            let effect = WornEffect(canvas: canvas, follower: follower(from: expression), item: Moustache())
+            effect.setValues(values)
+            return effect.apply(to: picture, time: 0)
+        }
+        func isBlack(_ color: [Int]) -> Bool { color[0] < 40 && color[1] < 40 && color[2] < 40 }
+
+        let worn = drawn(wearer)
+        XCTAssertTrue(isBlack(pixel(worn, x: 160, y: 61)), "black, under the middle of the nose")
+        XCTAssertTrue(isBlack(pixel(worn, x: 172, y: 64)), "the right side")
+        XCTAssertTrue(isBlack(pixel(worn, x: 148, y: 64)), "and the left")
+        XCTAssertTrue(isBlue(pixel(worn, x: 160, y: 70)), "nothing above it")
+        XCTAssertTrue(isBlue(pixel(worn, x: 200, y: 61)), "nor past its tips")
+
+        let red = drawn(wearer, values: [Moustache.colorKey: .color(red: 1, green: 0, blue: 0, alpha: 1)])
+        XCTAssertEqual(Array(pixel(red, x: 172, y: 64).prefix(3)), [255, 0, 0])
+
+        var leaning = wearer
+        leaning.roll = .pi / 2
+        XCTAssertTrue(isBlack(pixel(drawn(leaning), x: 156, y: 72)), "it leans with the head")
+        XCTAssertEqual(WornEffect.parameters(for: Moustache()).map(\.key), ["Size", "Color"])
+    }
+
+    // MARK: Follow me
+
+    func testFollowMeZoomsInOnTheFaceAndKeepsThePictureEdgesOutOfFrame() {
+        // A red spot where the face is.
+        let spot = CIImage(color: .red).cropped(to: CGRect(x: 58, y: 83, width: 4, height: 4)).composited(over: picture)
+        func framed(on centre: CGPoint, values: [String: EffectValue] = [:]) -> CIImage {
+            let effect = FollowMeEffect(canvas: canvas, follower: follower(from: face(centre)))
+            effect.setValues(values)
+            return effect.apply(to: spot, time: 0)
+        }
+        // Twice as close: a frame 160 by 90, its middle 9 below the face,
+        // held at the left edge. The spot lands at twice its place in it.
+        let close = framed(on: CGPoint(x: 60, y: 85), values: [FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertEqual(close.extent, bounds)
+        XCTAssertTrue(isRed(pixel(close, x: 120, y: 108)), "the face, zoomed in")
+        XCTAssertTrue(isBlue(pixel(close, x: 120, y: 140)), "with nothing else red")
+        // Over at the far corner the frame stops at the picture's edges.
+        let corner = framed(on: CGPoint(x: 320, y: 180), values: [FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertTrue(isBlue(pixel(corner, x: 120, y: 108)), "the spot is out of a frame held in the top right")
+        XCTAssertEqual(corner.extent, bounds)
+        // At no zoom the picture is as it was.
+        XCTAssertTrue(isRed(pixel(framed(on: CGPoint(x: 60, y: 85), values: [FollowMeEffect.zoomKey: .number(1)]), x: 60, y: 85)))
+        XCTAssertEqual(FollowMeEffect.parameters.map(\.key), ["Zoom"])
+    }
+
+    func testFollowMeIsFramedOnThePreviewsSampleFigure() {
+        let effect = FollowMeEffect(canvas: canvas, follower: follower(from: face()))
+        effect.rest(at: face(CGPoint(x: 60, y: 85)))
+        let spot = CIImage(color: .red).cropped(to: CGRect(x: 58, y: 83, width: 4, height: 4)).composited(over: picture)
+        effect.setValues([FollowMeEffect.zoomKey: .number(2)])
+        XCTAssertTrue(isRed(pixel(effect.apply(to: spot, time: 0), x: 120, y: 108)))
+    }
+
     // MARK: Big eyes
 
     func testBigEyesBulgeThePictureRoundEachEyeAndNowhereElse() {
@@ -421,13 +485,14 @@ final class CharacterEffectTests: XCTestCase {
     func testTheRealEffectsDrawOnAPictureWithNobodyInIt() {
         // The system finds no face in a plain picture: the figure and the
         // antennae wait in the middle.
-        XCTAssertEqual(NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker).map(\.name), ["Toy Figure", "Alien Antennae", "Pixel Sunglasses", "Big Eyes"])
+        XCTAssertEqual(NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker).map(\.name), ["Toy Figure", "Alien Antennae", "Pixel Sunglasses", "Moustache", "Big Eyes", "Follow Me"])
         for character in NativeEffect.characters(tuning: tuning, tracker: RenderingSupplies.system().makeFaceTracker) {
             let image = character.make(canvas).apply(to: picture, time: 0)
             XCTAssertEqual(image.extent, bounds, character.name)
-            // Big Eyes only reshapes the picture, which a plain one does not show.
-            let marks = [(160, 130), (137, 172), (160, 121)].map { pixel(image, x: $0.0, y: $0.1) }
-            XCTAssertEqual(marks.allSatisfy(isBlue), character.name == BigEyesEffect.name, character.name)
+            // Big Eyes and Follow Me only reshape the picture, which a plain one does not show.
+            let marks = [(160, 130), (137, 172), (160, 121), (160, 96)].map { pixel(image, x: $0.0, y: $0.1) }
+            let reshapes = [BigEyesEffect.name, FollowMeEffect.name].contains(character.name)
+            XCTAssertEqual(marks.allSatisfy(isBlue), reshapes, character.name)
         }
     }
 }
